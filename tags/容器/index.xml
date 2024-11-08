@@ -2,17 +2,17 @@
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom" xmlns:content="http://purl.org/rss/1.0/modules/content/">
   <channel>
     <title>容器 on lidongqi</title>
-    <link>http://localhost:1313/tags/%E5%AE%B9%E5%99%A8/</link>
+    <link>https://lidongqi.github.io/tags/%E5%AE%B9%E5%99%A8/</link>
     <description>Recent content in 容器 on lidongqi</description>
     <generator>Hugo -- 0.137.0</generator>
     <language>zh</language>
     <lastBuildDate>Wed, 06 Nov 2024 15:11:16 +0800</lastBuildDate>
-    <atom:link href="http://localhost:1313/tags/%E5%AE%B9%E5%99%A8/index.xml" rel="self" type="application/rss+xml" />
+    <atom:link href="https://lidongqi.github.io/tags/%E5%AE%B9%E5%99%A8/index.xml" rel="self" type="application/rss+xml" />
     <item>
       <title>容器加密</title>
-      <link>http://localhost:1313/posts/%E5%AE%B9%E5%99%A8%E5%8A%A0%E5%AF%86/</link>
+      <link>https://lidongqi.github.io/posts/%E5%AE%B9%E5%99%A8%E5%8A%A0%E5%AF%86/</link>
       <pubDate>Wed, 06 Nov 2024 15:11:16 +0800</pubDate>
-      <guid>http://localhost:1313/posts/%E5%AE%B9%E5%99%A8%E5%8A%A0%E5%AF%86/</guid>
+      <guid>https://lidongqi.github.io/posts/%E5%AE%B9%E5%99%A8%E5%8A%A0%E5%AF%86/</guid>
       <description>&lt;h2 id=&#34;oci&#34;&gt;OCI&lt;/h2&gt;
 &lt;p&gt;容器运行时标准，&lt;a href=&#34;https://github.com/opencontainers&#34;&gt;Open Container Initiative&lt;/a&gt;
 containerd,cri-o,docker,rkt都是OCI的实现。
@@ -39,7 +39,13 @@ containerd 支持对image的加解密具体说明参考&lt;a href=&#34;https://g
 &lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;nv&#34;&gt;$CTR&lt;/span&gt; images pull --all-platforms docker.io/library/bash:latest
 &lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;查看镜像层数&lt;/p&gt;
 &lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;nv&#34;&gt;$CTR&lt;/span&gt; images layerinfo --platform linux/amd64 docker.io/library/bash:latest
-&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;!-- raw HTML omitted --&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;figure&gt;
+&lt;img
+src=&#34;../%E5%AE%B9%E5%99%A8%E5%8A%A0%E5%AF%86/dc6ba61292a2cf9ce405af7c985d08d628db30e4.png&#34;
+title=&#34;wikilink&#34; alt=&#34;Pastedimage20241106181333.png&#34; /&gt;
+&lt;figcaption
+aria-hidden=&#34;true&#34;&gt;Pastedimage20241106181333.png&lt;/figcaption&gt;
+&lt;/figure&gt;
 &lt;p&gt;加密&lt;/p&gt;
 &lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;nv&#34;&gt;$CTR&lt;/span&gt; images encrypt --recipient jwe:mypubkey.pem --platform linux/amd64 docker.io/library/bash:latest bash.enc:latest
 &lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;查看镜像层数&lt;/p&gt;</description>

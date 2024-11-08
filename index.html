@@ -134,6 +134,24 @@
     </nav>
 </header>
 <main class="main"> 
+
+<article class="first-entry"> 
+  <header class="entry-header">
+    <h2 class="entry-hint-parent">容器加密
+    </h2>
+  </header>
+  <div class="entry-content">
+    <p>OCI 容器运行时标准，Open Container Initiative containerd,cri-o,docker,rkt都是OCI的实现。 所以对镜像加密实际上是需要对OCI镜像进行处理。 # containerd containerd 支持对image的加解密具体说明参考containerd文档。 加密的镜像是包含加密blob(二进制对象)的OCI格式的镜像。 # 加密 ## imgcrypt ### install 需要提前准备好golang环境
+git clone https://github.com/containerd/imgcrypt.git cd imgcrypt make sudo make install encrypt 创建RSA key
+openssl genrsa -out mykey.pem openssl rsa -in mykey.pem -pubout -out mypubkey.pem 创建加密镜像
+# 这里使用已经安装好的containerd服务 sudo chmod 0666 /run/containerd/containerd.sock CTR=&#34;/usr/local/bin/ctr-enc&#34; $CTR images pull --all-platforms docker.io/library/bash:latest 查看镜像层数
+$CTR images layerinfo --platform linux/amd64 docker.io/library/bash:latest Pastedimage20241106181333.png 加密
+$CTR images encrypt --recipient jwe:mypubkey.pem --platform linux/amd64 docker.io/library/bash:latest bash.enc:latest 查看镜像层数
+...</p>
+  </div>
+  <footer class="entry-footer"><span title='2024-11-06 15:11:16 +0800 CST'>十一月 6, 2024</span></footer>
+  <a class="entry-link" aria-label="post link to 容器加密" href="https://lidongqi.github.io/posts/%E5%AE%B9%E5%99%A8%E5%8A%A0%E5%AF%86/"></a>
+</article>
     </main>
     
 <footer class="footer">

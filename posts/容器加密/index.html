@@ -1,10 +1,10 @@
 <!DOCTYPE html>
 <html lang="zh" dir="auto">
 
-<head><script src="/livereload.js?mindelay=10&amp;v=2&amp;port=1313&amp;path=livereload" data-no-instant defer></script><meta charset="utf-8">
+<head><meta charset="utf-8">
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-<meta name="robots" content="noindex, nofollow">
+<meta name="robots" content="index, follow">
 <title>容器加密 | lidongqi</title>
 <meta name="keywords" content="容器">
 <meta name="description" content="OCI
@@ -34,20 +34,23 @@ $CTR images pull --all-platforms docker.io/library/bash:latest
 查看镜像层数
 $CTR images layerinfo --platform linux/amd64 docker.io/library/bash:latest
 
+
+Pastedimage20241106181333.png
+
 加密
 $CTR images encrypt --recipient jwe:mypubkey.pem --platform linux/amd64 docker.io/library/bash:latest bash.enc:latest
 查看镜像层数">
 <meta name="author" content="">
-<link rel="canonical" href="http://localhost:1313/posts/%E5%AE%B9%E5%99%A8%E5%8A%A0%E5%AF%86/">
+<link rel="canonical" href="https://lidongqi.github.io/posts/%E5%AE%B9%E5%99%A8%E5%8A%A0%E5%AF%86/">
 <link crossorigin="anonymous" href="/assets/css/stylesheet.fc220c15db4aef0318bbf30adc45d33d4d7c88deff3238b23eb255afdc472ca6.css" integrity="sha256-/CIMFdtK7wMYu/MK3EXTPU18iN7/MjiyPrJVr9xHLKY=" rel="preload stylesheet" as="style">
-<link rel="icon" href="http://localhost:1313/favicon.ico">
-<link rel="icon" type="image/png" sizes="16x16" href="http://localhost:1313/favicon-16x16.png">
-<link rel="icon" type="image/png" sizes="32x32" href="http://localhost:1313/favicon-32x32.png">
-<link rel="apple-touch-icon" href="http://localhost:1313/apple-touch-icon.png">
-<link rel="mask-icon" href="http://localhost:1313/safari-pinned-tab.svg">
+<link rel="icon" href="https://lidongqi.github.io/favicon.ico">
+<link rel="icon" type="image/png" sizes="16x16" href="https://lidongqi.github.io/favicon-16x16.png">
+<link rel="icon" type="image/png" sizes="32x32" href="https://lidongqi.github.io/favicon-32x32.png">
+<link rel="apple-touch-icon" href="https://lidongqi.github.io/apple-touch-icon.png">
+<link rel="mask-icon" href="https://lidongqi.github.io/safari-pinned-tab.svg">
 <meta name="theme-color" content="#2e2e33">
 <meta name="msapplication-TileColor" content="#2e2e33">
-<link rel="alternate" hreflang="zh" href="http://localhost:1313/posts/%E5%AE%B9%E5%99%A8%E5%8A%A0%E5%AF%86/">
+<link rel="alternate" hreflang="zh" href="https://lidongqi.github.io/posts/%E5%AE%B9%E5%99%A8%E5%8A%A0%E5%AF%86/">
 <noscript>
     <style>
         #theme-toggle,
@@ -84,7 +87,130 @@ $CTR images encrypt --recipient jwe:mypubkey.pem --platform linux/amd64 docker.i
         }
 
     </style>
-</noscript>
+</noscript><meta property="og:title" content="容器加密">
+<meta property="og:description" content="OCI
+容器运行时标准，Open Container Initiative
+containerd,cri-o,docker,rkt都是OCI的实现。
+所以对镜像加密实际上是需要对OCI镜像进行处理。
+# containerd
+containerd 支持对image的加解密具体说明参考containerd文档。
+加密的镜像是包含加密blob(二进制对象)的OCI格式的镜像。
+# 加密
+## imgcrypt
+### install
+需要提前准备好golang环境
+git clone https://github.com/containerd/imgcrypt.git
+cd imgcrypt
+make
+sudo make install
+encrypt
+创建RSA key
+openssl genrsa -out mykey.pem
+openssl rsa -in mykey.pem -pubout -out mypubkey.pem
+创建加密镜像
+# 这里使用已经安装好的containerd服务
+sudo chmod 0666 /run/containerd/containerd.sock
+CTR=&#34;/usr/local/bin/ctr-enc&#34;
+$CTR images pull --all-platforms docker.io/library/bash:latest
+查看镜像层数
+$CTR images layerinfo --platform linux/amd64 docker.io/library/bash:latest
+
+
+Pastedimage20241106181333.png
+
+加密
+$CTR images encrypt --recipient jwe:mypubkey.pem --platform linux/amd64 docker.io/library/bash:latest bash.enc:latest
+查看镜像层数">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://lidongqi.github.io/posts/%E5%AE%B9%E5%99%A8%E5%8A%A0%E5%AF%86/"><meta property="article:section" content="posts">
+<meta property="article:published_time" content="2024-11-06T15:11:16+08:00">
+<meta property="article:modified_time" content="2024-11-06T15:11:16+08:00">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="容器加密">
+<meta name="twitter:description" content="OCI
+容器运行时标准，Open Container Initiative
+containerd,cri-o,docker,rkt都是OCI的实现。
+所以对镜像加密实际上是需要对OCI镜像进行处理。
+# containerd
+containerd 支持对image的加解密具体说明参考containerd文档。
+加密的镜像是包含加密blob(二进制对象)的OCI格式的镜像。
+# 加密
+## imgcrypt
+### install
+需要提前准备好golang环境
+git clone https://github.com/containerd/imgcrypt.git
+cd imgcrypt
+make
+sudo make install
+encrypt
+创建RSA key
+openssl genrsa -out mykey.pem
+openssl rsa -in mykey.pem -pubout -out mypubkey.pem
+创建加密镜像
+# 这里使用已经安装好的containerd服务
+sudo chmod 0666 /run/containerd/containerd.sock
+CTR=&#34;/usr/local/bin/ctr-enc&#34;
+$CTR images pull --all-platforms docker.io/library/bash:latest
+查看镜像层数
+$CTR images layerinfo --platform linux/amd64 docker.io/library/bash:latest
+
+
+Pastedimage20241106181333.png
+
+加密
+$CTR images encrypt --recipient jwe:mypubkey.pem --platform linux/amd64 docker.io/library/bash:latest bash.enc:latest
+查看镜像层数">
+
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    {
+      "@type": "ListItem",
+      "position":  1 ,
+      "name": "Posts",
+      "item": "https://lidongqi.github.io/posts/"
+    }, 
+    {
+      "@type": "ListItem",
+      "position":  2 ,
+      "name": "容器加密",
+      "item": "https://lidongqi.github.io/posts/%E5%AE%B9%E5%99%A8%E5%8A%A0%E5%AF%86/"
+    }
+  ]
+}
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "容器加密",
+  "name": "容器加密",
+  "description": "OCI 容器运行时标准，Open Container Initiative containerd,cri-o,docker,rkt都是OCI的实现。 所以对镜像加密实际上是需要对OCI镜像进行处理。 # containerd containerd 支持对image的加解密具体说明参考containerd文档。 加密的镜像是包含加密blob(二进制对象)的OCI格式的镜像。 # 加密 ## imgcrypt ### install 需要提前准备好golang环境\ngit clone https://github.com/containerd/imgcrypt.git cd imgcrypt make sudo make install encrypt 创建RSA key\nopenssl genrsa -out mykey.pem openssl rsa -in mykey.pem -pubout -out mypubkey.pem 创建加密镜像\n# 这里使用已经安装好的containerd服务 sudo chmod 0666 /run/containerd/containerd.sock CTR=\u0026#34;/usr/local/bin/ctr-enc\u0026#34; $CTR images pull --all-platforms docker.io/library/bash:latest 查看镜像层数\n$CTR images layerinfo --platform linux/amd64 docker.io/library/bash:latest Pastedimage20241106181333.png 加密\n$CTR images encrypt --recipient jwe:mypubkey.pem --platform linux/amd64 docker.io/library/bash:latest bash.enc:latest 查看镜像层数\n",
+  "keywords": [
+    "容器"
+  ],
+  "articleBody": "OCI 容器运行时标准，Open Container Initiative containerd,cri-o,docker,rkt都是OCI的实现。 所以对镜像加密实际上是需要对OCI镜像进行处理。 # containerd containerd 支持对image的加解密具体说明参考containerd文档。 加密的镜像是包含加密blob(二进制对象)的OCI格式的镜像。 # 加密 ## imgcrypt ### install 需要提前准备好golang环境\ngit clone https://github.com/containerd/imgcrypt.git cd imgcrypt make sudo make install encrypt 创建RSA key\nopenssl genrsa -out mykey.pem openssl rsa -in mykey.pem -pubout -out mypubkey.pem 创建加密镜像\n# 这里使用已经安装好的containerd服务 sudo chmod 0666 /run/containerd/containerd.sock CTR=\"/usr/local/bin/ctr-enc\" $CTR images pull --all-platforms docker.io/library/bash:latest 查看镜像层数\n$CTR images layerinfo --platform linux/amd64 docker.io/library/bash:latest Pastedimage20241106181333.png 加密\n$CTR images encrypt --recipient jwe:mypubkey.pem --platform linux/amd64 docker.io/library/bash:latest bash.enc:latest 查看镜像层数\n$CTR images layerinfo --platform linux/amd64 bash.enc:latest 可以看到加密后的信息 ### use 启动一个本地registry\nsudo docker pull registry:latest sudo docker run -d -p 5000:5000 --restart=always --name registry registry 推送镜像\n$CTR images tag bash.enc:latest localhost:5000/bash.enc:latest $CTR images push localhost:5000/bash.enc:latest $CTR images rm localhost:5000/bash.enc:latest bash.enc:latest 查看本地images\nctr images ls 只有一个bash镜像\n尝试拉取镜像\nctr images pull localhost:5000/bash.enc:latest 拉取成功\n启动镜像：\nctr run --rm localhost:5000/bash.enc:latest test echo 'Hello World!' what ??? 居然可以直接运行？？\n在搜索一圈之后发现，需要删除本地镜像，不光包括生成的加密镜像，还包括原始镜像，才可以使用加密功能。 在删除所有镜像之后，再次拉取镜像，拉镜像时需要提供key。\nctr images pull --key ./mykey.pem localhost:5000/bash.enc:latest 然后直接运行\nctr run --rm localhost:5000/bash.enc:latest test echo 'Hello World!' 也是可以运行的\n这是因为 一次解密以后就可以一直使用，不需要每次创建容器时都输入秘钥 参考链接\n结论 仅第一次使用时需要认证，后续运行可以进入到容器中查看容器中的内容。因此并不适合对容器中的代码做保护，对容器中的代码保护还是需要从二进制加密和代码混淆角度入手。\n",
+  "wordCount" : "158",
+  "inLanguage": "zh",
+  "datePublished": "2024-11-06T15:11:16+08:00",
+  "dateModified": "2024-11-06T15:11:16+08:00",
+  "mainEntityOfPage": {
+    "@type": "WebPage",
+    "@id": "https://lidongqi.github.io/posts/%E5%AE%B9%E5%99%A8%E5%8A%A0%E5%AF%86/"
+  },
+  "publisher": {
+    "@type": "Organization",
+    "name": "lidongqi",
+    "logo": {
+      "@type": "ImageObject",
+      "url": "https://lidongqi.github.io/favicon.ico"
+    }
+  }
+}
+</script>
 </head>
 
 <body class="" id="top">
@@ -102,7 +228,7 @@ $CTR images encrypt --recipient jwe:mypubkey.pem --platform linux/amd64 docker.i
 <header class="header">
     <nav class="nav">
         <div class="logo">
-            <a href="http://localhost:1313/" accesskey="h" title="lidongqi (Alt + H)">lidongqi</a>
+            <a href="https://lidongqi.github.io/" accesskey="h" title="lidongqi (Alt + H)">lidongqi</a>
             <div class="logo-switches">
                 <button id="theme-toggle" accesskey="t" title="(Alt + T)">
                     <svg id="moon" xmlns="http://www.w3.org/2000/svg" width="24" height="18" viewBox="0 0 24 24"
@@ -128,12 +254,12 @@ $CTR images encrypt --recipient jwe:mypubkey.pem --platform linux/amd64 docker.i
         </div>
         <ul id="menu">
             <li>
-                <a href="http://localhost:1313/categories/" title="分类">
+                <a href="https://lidongqi.github.io/categories/" title="分类">
                     <span>分类</span>
                 </a>
             </li>
             <li>
-                <a href="http://localhost:1313/tags/" title="标签">
+                <a href="https://lidongqi.github.io/tags/" title="标签">
                     <span>标签</span>
                 </a>
             </li>
@@ -147,12 +273,6 @@ $CTR images encrypt --recipient jwe:mypubkey.pem --platform linux/amd64 docker.i
     
     <h1 class="post-title entry-hint-parent">
       容器加密
-      <span class="entry-hint" title="Draft">
-        <svg xmlns="http://www.w3.org/2000/svg" height="35" viewBox="0 -960 960 960" fill="currentColor">
-          <path
-            d="M160-410v-60h300v60H160Zm0-165v-60h470v60H160Zm0-165v-60h470v60H160Zm360 580v-123l221-220q9-9 20-13t22-4q12 0 23 4.5t20 13.5l37 37q9 9 13 20t4 22q0 11-4.5 22.5T862.09-380L643-160H520Zm300-263-37-37 37 37ZM580-220h38l121-122-18-19-19-18-122 121v38Zm141-141-19-18 37 37-18-19Z" />
-        </svg>
-      </span>
     </h1>
     <div class="post-meta"><span title='2024-11-06 15:11:16 +0800 CST'>十一月 6, 2024</span>
 
@@ -184,7 +304,13 @@ containerd 支持对image的加解密具体说明参考<a href="https://github.c
 </span></span><span class="line"><span class="cl"><span class="nv">$CTR</span> images pull --all-platforms docker.io/library/bash:latest
 </span></span></code></pre></div><p>查看镜像层数</p>
 <div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl"><span class="nv">$CTR</span> images layerinfo --platform linux/amd64 docker.io/library/bash:latest
-</span></span></code></pre></div><!-- raw HTML omitted -->
+</span></span></code></pre></div><figure>
+<img
+src="../%E5%AE%B9%E5%99%A8%E5%8A%A0%E5%AF%86/dc6ba61292a2cf9ce405af7c985d08d628db30e4.png"
+title="wikilink" alt="Pastedimage20241106181333.png" />
+<figcaption
+aria-hidden="true">Pastedimage20241106181333.png</figcaption>
+</figure>
 <p>加密</p>
 <div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl"><span class="nv">$CTR</span> images encrypt --recipient jwe:mypubkey.pem --platform linux/amd64 docker.io/library/bash:latest bash.enc:latest
 </span></span></code></pre></div><p>查看镜像层数</p>
@@ -236,7 +362,7 @@ containerd 支持对image的加解密具体说明参考<a href="https://github.c
     </main>
     
 <footer class="footer">
-        <span>&copy; 2024 <a href="http://localhost:1313/">lidongqi</a></span> · 
+        <span>&copy; 2024 <a href="https://lidongqi.github.io/">lidongqi</a></span> · 
 
     <span>
         Powered by
