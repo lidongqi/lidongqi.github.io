@@ -5,11 +5,11 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 <meta name="robots" content="index, follow">
-<title>Categories | lidongqi</title>
+<title>Python | lidongqi</title>
 <meta name="keywords" content="">
 <meta name="description" content="">
 <meta name="author" content="">
-<link rel="canonical" href="https://lidongqi.github.io/categories/">
+<link rel="canonical" href="https://lidongqi.github.io/tags/python/">
 <link crossorigin="anonymous" href="/assets/css/stylesheet.fc220c15db4aef0318bbf30adc45d33d4d7c88deff3238b23eb255afdc472ca6.css" integrity="sha256-/CIMFdtK7wMYu/MK3EXTPU18iN7/MjiyPrJVr9xHLKY=" rel="preload stylesheet" as="style">
 <link rel="icon" href="https://lidongqi.github.io/favicon.ico">
 <link rel="icon" type="image/png" sizes="16x16" href="https://lidongqi.github.io/favicon-16x16.png">
@@ -18,8 +18,8 @@
 <link rel="mask-icon" href="https://lidongqi.github.io/safari-pinned-tab.svg">
 <meta name="theme-color" content="#2e2e33">
 <meta name="msapplication-TileColor" content="#2e2e33">
-<link rel="alternate" type="application/rss+xml" href="https://lidongqi.github.io/categories/index.xml">
-<link rel="alternate" hreflang="zh" href="https://lidongqi.github.io/categories/">
+<link rel="alternate" type="application/rss+xml" href="https://lidongqi.github.io/tags/python/index.xml">
+<link rel="alternate" hreflang="zh" href="https://lidongqi.github.io/tags/python/">
 <noscript>
     <style>
         #theme-toggle,
@@ -56,12 +56,12 @@
         }
 
     </style>
-</noscript><meta property="og:title" content="Categories">
+</noscript><meta property="og:title" content="Python">
 <meta property="og:description" content="">
 <meta property="og:type" content="website">
-<meta property="og:url" content="https://lidongqi.github.io/categories/">
+<meta property="og:url" content="https://lidongqi.github.io/tags/python/">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="Categories">
+<meta name="twitter:title" content="Python">
 <meta name="twitter:description" content="">
 
 </head>
@@ -108,7 +108,7 @@
         <ul id="menu">
             <li>
                 <a href="https://lidongqi.github.io/categories/" title="分类">
-                    <span class="active">分类</span>
+                    <span>分类</span>
                 </a>
             </li>
             <li>
@@ -119,19 +119,33 @@
         </ul>
     </nav>
 </header>
-<main class="main">
+<main class="main"> 
 <header class="page-header">
-    <h1>分类</h1>
+  <h1>
+    Python
+  </h1>
 </header>
 
-<ul class="terms-tags">
-    <li>
-        <a href="https://lidongqi.github.io/categories/python/">python <sup><strong><sup>1</sup></strong></sup> </a>
-    </li>
-    <li>
-        <a href="https://lidongqi.github.io/categories/%E4%BA%91%E5%8E%9F%E7%94%9F/">云原生 <sup><strong><sup>1</sup></strong></sup> </a>
-    </li>
-</ul>
+<article class="post-entry tag-entry"> 
+  <header class="entry-header">
+    <h2 class="entry-hint-parent">python防止反编译打包
+    </h2>
+  </header>
+  <div class="entry-content">
+    <p>cython cython是针对python和cython的的优化静态编译器。 主要作用是对python进行c扩展，其采用的方式是将python代码转换为c代码，然后将c代码编译为动态链接库（.so格式）。然后通过python或者c代码调用。 适用场景：
+结构简单的原生python代码编译为静态链接库 使用cython编写代码 不适用场景： 已经编写好的python工程 &gt; 完成度比较高的工程实用cython编译会有功能不支持，打包失败等问题。如果如数解决这些问题，则需要修改/重构代码。 pyinstaller 可以轻松被反编译，所以放弃该选择
+nuitka 实现原理和cython基本一致，循序流程：python代码-&gt;c代码-&gt;动态连接文件-&gt;可执行程序。 安装
+pip install nuitka 一些经验 对于桌面程序，打包一个文件
+python -m nuitka main.py --standalone --onefile --follow-imports 对于后端应用，过程相对复杂了一些。主要有以下几个原因
+standalone方式 后端程序依赖关系复杂，打包过程较慢 有以下库需要包含metadata，需要指定–include-distribution-metadata=packagename来包含metadata 非standalone 依赖关系复杂，有一些包需要手动添加。确定的方式基本上就是每次添加完成后验证当前二进制程序是否可以直接执行，否则继续查找问题，添加/删除依赖的package fastapi和asyncio是大部分问题的源头 过程简要记录 假设当前项目结构：
+- package1 - package2 - package3 - main.py 则对应的命令为:
+python -m nuitka main.py --include-package=package1 \ --include-package=package2 \ --include-package=package3 打包完成后会有main.bin文件输出。但根据项目的复杂程度，可能一次成功，也可能运行失败。
+大部分问题都是fastapi和asyncio引起的。 比如运行时遇到如下问题： File &#34;/opt/anaconda3/envs/packagetest/lib/python3.10/site-packages/httpx/_client.py&#34;, line 1674, in send response = await self._send_handling_auth( File &#34;/opt/anaconda3/envs/packagetest/lib/python3.10/site-packages/httpx/_client.py&#34;, line 1702, in _send_handling_auth response = await self._send_handling_redirects( File &#34;/opt/anaconda3/envs/packagetest/lib/python3.10/site-packages/httpx/_client.py&#34;, line 1739, in _send_handling_redirects response = await self._send_single_request(request) File &#34;/opt/anaconda3/envs/packagetest/lib/python3.10/site-packages/httpx/_client.py&#34;, line 1776, in _send_single_request response = await transport.handle_async_request(request) File &#34;/opt/anaconda3/envs/packagetest/lib/python3.10/site-packages/httpx/_transports/default.py&#34;, line 377, in handle_async_request resp = await self._pool.handle_async_request(req) File &#34;/opt/anaconda3/envs/packagetest/lib/python3.10/site-packages/httpcore/_async/connection_pool.py&#34;, line 216, in handle_async_request raise exc from None File &#34;/opt/anaconda3/envs/packagetest/lib/python3.10/site-packages/httpcore/_async/connection_pool.py&#34;, line 196, in handle_async_request response = await connection.handle_async_request( File &#34;/opt/anaconda3/envs/packagetest/lib/python3.10/site-packages/httpcore/_async/connection.py&#34;, line 99, in handle_async_request raise exc File &#34;/opt/anaconda3/envs/packagetest/lib/python3.10/site-packages/httpcore/_async/connection.py&#34;, line 76, in handle_async_request stream = await self._connect(request) File &#34;/opt/anaconda3/envs/packagetest/lib/python3.10/site-packages/httpcore/_async/connection.py&#34;, line 122, in _connect stream = await self._network_backend.connect_tcp(**kwargs) File &#34;/opt/anaconda3/envs/packagetest/lib/python3.10/site-packages/httpcore/_backends/auto.py&#34;, line 30, in connect_tcp return await self._backend.connect_tcp( File &#34;/opt/anaconda3/envs/packagetest/lib/python3.10/site-packages/httpcore/_backends/anyio.py&#34;, line 116, in connect_tcp with anyio.fail_after(timeout): 从日志中可以看出，是调用anyio出了问题，说以这里将anyio添加到打包内容中：
+...</p>
+  </div>
+  <footer class="entry-footer"><span title='2024-11-10 17:10:13 +0800 CST'>十一月 10, 2024</span></footer>
+  <a class="entry-link" aria-label="post link to python防止反编译打包" href="https://lidongqi.github.io/posts/python_package/"></a>
+</article>
     </main>
     
 <footer class="footer">

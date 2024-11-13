@@ -6,8 +6,89 @@
     <description>Recent content on lidongqi</description>
     <generator>Hugo -- 0.137.0</generator>
     <language>zh</language>
-    <lastBuildDate>Wed, 06 Nov 2024 15:11:16 +0800</lastBuildDate>
+    <lastBuildDate>Sun, 10 Nov 2024 17:10:13 +0800</lastBuildDate>
     <atom:link href="https://lidongqi.github.io/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>python防止反编译打包</title>
+      <link>https://lidongqi.github.io/posts/python_package/</link>
+      <pubDate>Sun, 10 Nov 2024 17:10:13 +0800</pubDate>
+      <guid>https://lidongqi.github.io/posts/python_package/</guid>
+      <description>&lt;h1 id=&#34;cython&#34;&gt;cython&lt;/h1&gt;
+&lt;p&gt;&lt;a href=&#34;https://cython.org/&#34;&gt;cython&lt;/a&gt;是针对python和cython的的优化静态编译器。
+主要作用是对python进行c扩展，其采用的方式是将python代码转换为c代码，然后将c代码编译为动态链接库（.so格式）。然后通过python或者c代码调用。
+适用场景：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;结构简单的原生python代码编译为静态链接库&lt;/li&gt;
+&lt;li&gt;使用cython编写代码
+不适用场景：&lt;/li&gt;
+&lt;li&gt;已经编写好的python工程
+&amp;gt; 完成度比较高的工程实用cython编译会有功能不支持，打包失败等问题。如果如数解决这些问题，则需要修改/重构代码。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h1 id=&#34;pyinstaller&#34;&gt;pyinstaller&lt;/h1&gt;
+&lt;p&gt;可以轻松被反编译，所以放弃该选择&lt;/p&gt;
+&lt;h1 id=&#34;nuitka&#34;&gt;nuitka&lt;/h1&gt;
+&lt;p&gt;实现原理和cython基本一致，循序流程：python代码-&amp;gt;c代码-&amp;gt;动态连接文件-&amp;gt;可执行程序。
+安装&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;pip install nuitka
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h2 id=&#34;一些经验&#34;&gt;一些经验&lt;/h2&gt;
+&lt;p&gt;对于桌面程序，打包一个文件&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;python -m nuitka main.py --standalone --onefile --follow-imports
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;对于后端应用，过程相对复杂了一些。主要有以下几个原因&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;standalone方式
+&lt;ul&gt;
+&lt;li&gt;后端程序依赖关系复杂，打包过程较慢&lt;/li&gt;
+&lt;li&gt;有以下库需要包含metadata，需要指定&amp;ndash;include-distribution-metadata=packagename来包含metadata&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;非standalone
+&lt;ul&gt;
+&lt;li&gt;依赖关系复杂，有一些包需要手动添加。确定的方式基本上就是每次添加完成后验证当前二进制程序是否可以直接执行，否则继续查找问题，添加/删除依赖的package&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;fastapi和asyncio是大部分问题的源头&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h2 id=&#34;过程简要记录&#34;&gt;过程简要记录&lt;/h2&gt;
+&lt;p&gt;假设当前项目结构：&lt;/p&gt;
+&lt;pre tabindex=&#34;0&#34;&gt;&lt;code&gt;    - package1
+    - package2
+    - package3
+    - main.py
+&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;则对应的命令为:&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-shell&#34; data-lang=&#34;shell&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;python -m nuitka main.py --include-package&lt;span class=&#34;o&#34;&gt;=&lt;/span&gt;package1 &lt;span class=&#34;se&#34;&gt;\
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;se&#34;&gt;&lt;/span&gt;    --include-package&lt;span class=&#34;o&#34;&gt;=&lt;/span&gt;package2 &lt;span class=&#34;se&#34;&gt;\
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;se&#34;&gt;&lt;/span&gt;    --include-package&lt;span class=&#34;o&#34;&gt;=&lt;/span&gt;package3
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;打包完成后会有main.bin文件输出。但根据项目的复杂程度，可能一次成功，也可能运行失败。&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;大部分问题都是fastapi和asyncio引起的。
+比如运行时遇到如下问题：&lt;/li&gt;
+&lt;/ul&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-shell&#34; data-lang=&#34;shell&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;  File &lt;span class=&#34;s2&#34;&gt;&amp;#34;/opt/anaconda3/envs/packagetest/lib/python3.10/site-packages/httpx/_client.py&amp;#34;&lt;/span&gt;, line 1674, in send
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;    &lt;span class=&#34;nv&#34;&gt;response&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;=&lt;/span&gt; await self._send_handling_auth&lt;span class=&#34;o&#34;&gt;(&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;  File &lt;span class=&#34;s2&#34;&gt;&amp;#34;/opt/anaconda3/envs/packagetest/lib/python3.10/site-packages/httpx/_client.py&amp;#34;&lt;/span&gt;, line 1702, in _send_handling_auth
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;    &lt;span class=&#34;nv&#34;&gt;response&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;=&lt;/span&gt; await self._send_handling_redirects&lt;span class=&#34;o&#34;&gt;(&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;  File &lt;span class=&#34;s2&#34;&gt;&amp;#34;/opt/anaconda3/envs/packagetest/lib/python3.10/site-packages/httpx/_client.py&amp;#34;&lt;/span&gt;, line 1739, in _send_handling_redirects
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;    &lt;span class=&#34;nv&#34;&gt;response&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;=&lt;/span&gt; await self._send_single_request&lt;span class=&#34;o&#34;&gt;(&lt;/span&gt;request&lt;span class=&#34;o&#34;&gt;)&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;  File &lt;span class=&#34;s2&#34;&gt;&amp;#34;/opt/anaconda3/envs/packagetest/lib/python3.10/site-packages/httpx/_client.py&amp;#34;&lt;/span&gt;, line 1776, in _send_single_request
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;    &lt;span class=&#34;nv&#34;&gt;response&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;=&lt;/span&gt; await transport.handle_async_request&lt;span class=&#34;o&#34;&gt;(&lt;/span&gt;request&lt;span class=&#34;o&#34;&gt;)&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;  File &lt;span class=&#34;s2&#34;&gt;&amp;#34;/opt/anaconda3/envs/packagetest/lib/python3.10/site-packages/httpx/_transports/default.py&amp;#34;&lt;/span&gt;, line 377, in handle_async_request
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;    &lt;span class=&#34;nv&#34;&gt;resp&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;=&lt;/span&gt; await self._pool.handle_async_request&lt;span class=&#34;o&#34;&gt;(&lt;/span&gt;req&lt;span class=&#34;o&#34;&gt;)&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;  File &lt;span class=&#34;s2&#34;&gt;&amp;#34;/opt/anaconda3/envs/packagetest/lib/python3.10/site-packages/httpcore/_async/connection_pool.py&amp;#34;&lt;/span&gt;, line 216, in handle_async_request
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;    raise exc from None
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;  File &lt;span class=&#34;s2&#34;&gt;&amp;#34;/opt/anaconda3/envs/packagetest/lib/python3.10/site-packages/httpcore/_async/connection_pool.py&amp;#34;&lt;/span&gt;, line 196, in handle_async_request
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;    &lt;span class=&#34;nv&#34;&gt;response&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;=&lt;/span&gt; await connection.handle_async_request&lt;span class=&#34;o&#34;&gt;(&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;  File &lt;span class=&#34;s2&#34;&gt;&amp;#34;/opt/anaconda3/envs/packagetest/lib/python3.10/site-packages/httpcore/_async/connection.py&amp;#34;&lt;/span&gt;, line 99, in handle_async_request
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;    raise exc
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;  File &lt;span class=&#34;s2&#34;&gt;&amp;#34;/opt/anaconda3/envs/packagetest/lib/python3.10/site-packages/httpcore/_async/connection.py&amp;#34;&lt;/span&gt;, line 76, in handle_async_request
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;    &lt;span class=&#34;nv&#34;&gt;stream&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;=&lt;/span&gt; await self._connect&lt;span class=&#34;o&#34;&gt;(&lt;/span&gt;request&lt;span class=&#34;o&#34;&gt;)&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;  File &lt;span class=&#34;s2&#34;&gt;&amp;#34;/opt/anaconda3/envs/packagetest/lib/python3.10/site-packages/httpcore/_async/connection.py&amp;#34;&lt;/span&gt;, line 122, in _connect
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;    &lt;span class=&#34;nv&#34;&gt;stream&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;=&lt;/span&gt; await self._network_backend.connect_tcp&lt;span class=&#34;o&#34;&gt;(&lt;/span&gt;**kwargs&lt;span class=&#34;o&#34;&gt;)&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;  File &lt;span class=&#34;s2&#34;&gt;&amp;#34;/opt/anaconda3/envs/packagetest/lib/python3.10/site-packages/httpcore/_backends/auto.py&amp;#34;&lt;/span&gt;, line 30, in connect_tcp
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;    &lt;span class=&#34;k&#34;&gt;return&lt;/span&gt; await self._backend.connect_tcp&lt;span class=&#34;o&#34;&gt;(&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;  File &lt;span class=&#34;s2&#34;&gt;&amp;#34;/opt/anaconda3/envs/packagetest/lib/python3.10/site-packages/httpcore/_backends/anyio.py&amp;#34;&lt;/span&gt;, line 116, in connect_tcp
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;    with anyio.fail_after&lt;span class=&#34;o&#34;&gt;(&lt;/span&gt;timeout&lt;span class=&#34;o&#34;&gt;)&lt;/span&gt;:
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;从日志中可以看出，是调用anyio出了问题，说以这里将anyio添加到打包内容中：&lt;/p&gt;</description>
+    </item>
     <item>
       <title>容器加密</title>
       <link>https://lidongqi.github.io/posts/%E5%AE%B9%E5%99%A8%E5%8A%A0%E5%AF%86/</link>
