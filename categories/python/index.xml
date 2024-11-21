@@ -44,6 +44,7 @@
 &lt;li&gt;非standalone
 &lt;ul&gt;
 &lt;li&gt;依赖关系复杂，有一些包需要手动添加。确定的方式基本上就是每次添加完成后验证当前二进制程序是否可以直接执行，否则继续查找问题，添加/删除依赖的package&lt;/li&gt;
+&lt;li&gt;注意使用的python版本和nuitka版本匹配。有时需要调整python、nuitka、使用的三方库版本，最好让三者保持稳定。&lt;/li&gt;
 &lt;/ul&gt;
 &lt;/li&gt;
 &lt;li&gt;fastapi和asyncio是大部分问题的源头&lt;/li&gt;
