@@ -143,6 +143,24 @@
 
 <article class="post-entry"> 
   <header class="entry-header">
+    <h2 class="entry-hint-parent">ollama自定义模型
+    </h2>
+  </header>
+  <div class="entry-content">
+    <p>有时候需要调整一些模型参数，可以使用ollama模型的自定义功能 以 qwen2.5-coder:32b 为例，修改上下文长度 # 修改modelfile ## 获取modelfile
+ollama show --modelfile qwen2.5-coder:32b &gt; qwen2.5-coder-32b 修改配置 添加ctx长度，修改为32768，默认长度都是2048。
+vi qwen2.5-coder-32b 文档末尾添加
+PARAMETER num_ctx 32768 创建自定义model 使用ollama create创建新model即可
+ollama create qwen2.5-coder-32b-ctx-max -f qwen2.5-coder-32b 完成以后ollama list即可看到新模型
+qwen2.5-config % ollama list NAME ID SIZE MODIFIED qwen2.5-coder-32b-ctx-max:latest d4ab1461e7a9 19 GB 54 seconds ago bge-large:latest b3d71c928059 670 MB 7 days ago qwen2.5-coder:32b 4bd6cbf2d094 19 GB 8 days ago 再调用时qwen2.5-coder-32b-ctx-max 默认可以处理的上下文就是32k
+</p>
+  </div>
+  <footer class="entry-footer"><span title='2024-11-12 17:59:13 +0800 CST'>十一月 12, 2024</span>&nbsp;·&nbsp;lidongqi</footer>
+  <a class="entry-link" aria-label="post link to ollama自定义模型" href="https://lidongqi.github.io/posts/ollama_new_model/"></a>
+</article>
+
+<article class="post-entry"> 
+  <header class="entry-header">
     <h2 class="entry-hint-parent">python防止反编译打包
     </h2>
   </header>

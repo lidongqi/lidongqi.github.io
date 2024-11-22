@@ -6,8 +6,40 @@
     <description>Recent content on lidongqi</description>
     <generator>Hugo -- 0.137.0</generator>
     <language>zh</language>
-    <lastBuildDate>Sun, 10 Nov 2024 17:10:13 +0800</lastBuildDate>
+    <lastBuildDate>Tue, 12 Nov 2024 17:59:13 +0800</lastBuildDate>
     <atom:link href="https://lidongqi.github.io/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>ollama自定义模型</title>
+      <link>https://lidongqi.github.io/posts/ollama_new_model/</link>
+      <pubDate>Tue, 12 Nov 2024 17:59:13 +0800</pubDate>
+      <guid>https://lidongqi.github.io/posts/ollama_new_model/</guid>
+      <description>&lt;p&gt;有时候需要调整一些模型参数，可以使用ollama模型的自定义功能
+以 qwen2.5-coder:32b 为例，修改上下文长度
+# 修改modelfile
+## 获取modelfile&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;ollama show --modelfile qwen2.5-coder:32b &amp;gt; qwen2.5-coder-32b
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h2 id=&#34;修改配置&#34;&gt;修改配置&lt;/h2&gt;
+&lt;p&gt;添加ctx长度，修改为32768，默认长度都是2048。&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;vi qwen2.5-coder-32b
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;文档末尾添加&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;PARAMETER num_ctx 32768
+&lt;/code&gt;&lt;/pre&gt;
+&lt;h2 id=&#34;创建自定义model&#34;&gt;创建自定义model&lt;/h2&gt;
+&lt;p&gt;使用ollama create创建新model即可&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;ollama create qwen2.5-coder-32b-ctx-max -f qwen2.5-coder-32b
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;完成以后ollama list即可看到新模型&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;qwen2.5-config % ollama list
+
+NAME                                ID              SIZE      MODIFIED       
+
+qwen2.5-coder-32b-ctx-max:latest    d4ab1461e7a9    19 GB     54 seconds ago    
+
+bge-large:latest                    b3d71c928059    670 MB    7 days ago        
+
+qwen2.5-coder:32b                   4bd6cbf2d094    19 GB     8 days ago        
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;再调用时qwen2.5-coder-32b-ctx-max 默认可以处理的上下文就是32k&lt;/p&gt;</description>
+    </item>
     <item>
       <title>python防止反编译打包</title>
       <link>https://lidongqi.github.io/posts/python_package/</link>
