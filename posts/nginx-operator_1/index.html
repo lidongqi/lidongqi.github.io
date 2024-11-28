@@ -1,0 +1,665 @@
+<!DOCTYPE html>
+<html lang="zh" dir="auto">
+
+<head><meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+<meta name="robots" content="index, follow">
+<title>实现一个operator（1） | lidongqi</title>
+<meta name="keywords" content="k8s">
+<meta name="description" content="写在前面
+kubebuilder 是一个集成工具，为了更好的理解k8s工作流程。这里使用k8s tools实现一个operator。
+创建CRD
+Custom Resource
+以Resource的角度来审视k8s，可以发现k8s实际上做的事情是对Resource的CRUD操作。
+Custom Resource是一种用户定义的k8s resource数据，可以通过k8s api对定义的Resource进行CRUD操作。
+对于resource本身而言，只是存储结构化的数据，如果期望资源数据改变时集群中状态发生对应变化，就需要有一个Controller来对数据变化感知，然后修改集群内的状态。
+Custom Controller
+custom controller就是用户定义的controller。完成对customer resource内容变更的对应操作。
+将Custom Resource 和Custom Controller结合起来，就是operator模式。
+聚合API和独立API
+官方文档很详细，引用一下
+
+  
+      
+          
+          
+      
+  
+  
+      
+          考虑 API 聚合的情况
+          优选独立 API 的情况
+      
+      
+          你的 API 是声明式的。
+          你的 API 不符合声明式模型。
+      
+      
+          你希望可以是使用 kubectl 来读写你的新资源类别。
+          不要求 kubectl 支持。
+      
+      
+          你希望在 Kubernetes UI （如仪表板）中和其他内置类别一起查看你的新资源类别。
+          不需要 Kubernetes UI 支持。
+      
+      
+          你在开发新的 API。
+          你已经有一个提供 API 服务的程序并且工作良好。
+      
+      
+          你有意愿取接受 Kubernetes 对 REST 资源路径所作的格式限制，例如 API 组和名字空间。（参阅 API 概述）
+          你需要使用一些特殊的 REST 路径以便与已经定义的 REST API 保持兼容。
+      
+      
+          你的资源可以自然地界定为集群作用域或集群中某个名字空间作用域。
+          集群作用域或名字空间作用域这种二分法很不合适；你需要对资源路径的细节进行控制。
+      
+      
+          你希望复用 Kubernetes API 支持特性。
+          你不需要这类特性。
+      
+  
+
+简单解释就是CRD方式可以使用k8s已有api，当k8s已有api不满足条件时，才使用聚合层api来扩展。">
+<meta name="author" content="lidongqi">
+<link rel="canonical" href="https://lidongqi.github.io/posts/nginx-operator_1/">
+<link crossorigin="anonymous" href="/assets/css/stylesheet.fc220c15db4aef0318bbf30adc45d33d4d7c88deff3238b23eb255afdc472ca6.css" integrity="sha256-/CIMFdtK7wMYu/MK3EXTPU18iN7/MjiyPrJVr9xHLKY=" rel="preload stylesheet" as="style">
+<link rel="icon" href="https://lidongqi.github.io/favicon.ico">
+<link rel="icon" type="image/png" sizes="16x16" href="https://lidongqi.github.io/favicon-16x16.png">
+<link rel="icon" type="image/png" sizes="32x32" href="https://lidongqi.github.io/favicon-32x32.png">
+<link rel="apple-touch-icon" href="https://lidongqi.github.io/apple-touch-icon.png">
+<link rel="mask-icon" href="https://lidongqi.github.io/safari-pinned-tab.svg">
+<meta name="theme-color" content="#2e2e33">
+<meta name="msapplication-TileColor" content="#2e2e33">
+<link rel="alternate" hreflang="zh" href="https://lidongqi.github.io/posts/nginx-operator_1/">
+<noscript>
+    <style>
+        #theme-toggle,
+        .top-link {
+            display: none;
+        }
+
+    </style>
+    <style>
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --theme: rgb(29, 30, 32);
+                --entry: rgb(46, 46, 51);
+                --primary: rgb(218, 218, 219);
+                --secondary: rgb(155, 156, 157);
+                --tertiary: rgb(65, 66, 68);
+                --content: rgb(196, 196, 197);
+                --code-block-bg: rgb(46, 46, 51);
+                --code-bg: rgb(55, 56, 62);
+                --border: rgb(51, 51, 51);
+            }
+
+            .list {
+                background: var(--theme);
+            }
+
+            .list:not(.dark)::-webkit-scrollbar-track {
+                background: 0 0;
+            }
+
+            .list:not(.dark)::-webkit-scrollbar-thumb {
+                border-color: var(--theme);
+            }
+        }
+
+    </style>
+</noscript><meta property="og:title" content="实现一个operator（1）">
+<meta property="og:description" content="写在前面
+kubebuilder 是一个集成工具，为了更好的理解k8s工作流程。这里使用k8s tools实现一个operator。
+创建CRD
+Custom Resource
+以Resource的角度来审视k8s，可以发现k8s实际上做的事情是对Resource的CRUD操作。
+Custom Resource是一种用户定义的k8s resource数据，可以通过k8s api对定义的Resource进行CRUD操作。
+对于resource本身而言，只是存储结构化的数据，如果期望资源数据改变时集群中状态发生对应变化，就需要有一个Controller来对数据变化感知，然后修改集群内的状态。
+Custom Controller
+custom controller就是用户定义的controller。完成对customer resource内容变更的对应操作。
+将Custom Resource 和Custom Controller结合起来，就是operator模式。
+聚合API和独立API
+官方文档很详细，引用一下
+
+  
+      
+          
+          
+      
+  
+  
+      
+          考虑 API 聚合的情况
+          优选独立 API 的情况
+      
+      
+          你的 API 是声明式的。
+          你的 API 不符合声明式模型。
+      
+      
+          你希望可以是使用 kubectl 来读写你的新资源类别。
+          不要求 kubectl 支持。
+      
+      
+          你希望在 Kubernetes UI （如仪表板）中和其他内置类别一起查看你的新资源类别。
+          不需要 Kubernetes UI 支持。
+      
+      
+          你在开发新的 API。
+          你已经有一个提供 API 服务的程序并且工作良好。
+      
+      
+          你有意愿取接受 Kubernetes 对 REST 资源路径所作的格式限制，例如 API 组和名字空间。（参阅 API 概述）
+          你需要使用一些特殊的 REST 路径以便与已经定义的 REST API 保持兼容。
+      
+      
+          你的资源可以自然地界定为集群作用域或集群中某个名字空间作用域。
+          集群作用域或名字空间作用域这种二分法很不合适；你需要对资源路径的细节进行控制。
+      
+      
+          你希望复用 Kubernetes API 支持特性。
+          你不需要这类特性。
+      
+  
+
+简单解释就是CRD方式可以使用k8s已有api，当k8s已有api不满足条件时，才使用聚合层api来扩展。">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://lidongqi.github.io/posts/nginx-operator_1/"><meta property="article:section" content="posts">
+<meta property="article:published_time" content="2024-11-13T16:33:24+08:00">
+<meta property="article:modified_time" content="2024-11-13T16:33:24+08:00">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="实现一个operator（1）">
+<meta name="twitter:description" content="写在前面
+kubebuilder 是一个集成工具，为了更好的理解k8s工作流程。这里使用k8s tools实现一个operator。
+创建CRD
+Custom Resource
+以Resource的角度来审视k8s，可以发现k8s实际上做的事情是对Resource的CRUD操作。
+Custom Resource是一种用户定义的k8s resource数据，可以通过k8s api对定义的Resource进行CRUD操作。
+对于resource本身而言，只是存储结构化的数据，如果期望资源数据改变时集群中状态发生对应变化，就需要有一个Controller来对数据变化感知，然后修改集群内的状态。
+Custom Controller
+custom controller就是用户定义的controller。完成对customer resource内容变更的对应操作。
+将Custom Resource 和Custom Controller结合起来，就是operator模式。
+聚合API和独立API
+官方文档很详细，引用一下
+
+  
+      
+          
+          
+      
+  
+  
+      
+          考虑 API 聚合的情况
+          优选独立 API 的情况
+      
+      
+          你的 API 是声明式的。
+          你的 API 不符合声明式模型。
+      
+      
+          你希望可以是使用 kubectl 来读写你的新资源类别。
+          不要求 kubectl 支持。
+      
+      
+          你希望在 Kubernetes UI （如仪表板）中和其他内置类别一起查看你的新资源类别。
+          不需要 Kubernetes UI 支持。
+      
+      
+          你在开发新的 API。
+          你已经有一个提供 API 服务的程序并且工作良好。
+      
+      
+          你有意愿取接受 Kubernetes 对 REST 资源路径所作的格式限制，例如 API 组和名字空间。（参阅 API 概述）
+          你需要使用一些特殊的 REST 路径以便与已经定义的 REST API 保持兼容。
+      
+      
+          你的资源可以自然地界定为集群作用域或集群中某个名字空间作用域。
+          集群作用域或名字空间作用域这种二分法很不合适；你需要对资源路径的细节进行控制。
+      
+      
+          你希望复用 Kubernetes API 支持特性。
+          你不需要这类特性。
+      
+  
+
+简单解释就是CRD方式可以使用k8s已有api，当k8s已有api不满足条件时，才使用聚合层api来扩展。">
+
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    {
+      "@type": "ListItem",
+      "position":  1 ,
+      "name": "Posts",
+      "item": "https://lidongqi.github.io/posts/"
+    }, 
+    {
+      "@type": "ListItem",
+      "position":  2 ,
+      "name": "实现一个operator（1）",
+      "item": "https://lidongqi.github.io/posts/nginx-operator_1/"
+    }
+  ]
+}
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "实现一个operator（1）",
+  "name": "实现一个operator（1）",
+  "description": "写在前面 kubebuilder 是一个集成工具，为了更好的理解k8s工作流程。这里使用k8s tools实现一个operator。\n创建CRD Custom Resource 以Resource的角度来审视k8s，可以发现k8s实际上做的事情是对Resource的CRUD操作。\nCustom Resource是一种用户定义的k8s resource数据，可以通过k8s api对定义的Resource进行CRUD操作。\n对于resource本身而言，只是存储结构化的数据，如果期望资源数据改变时集群中状态发生对应变化，就需要有一个Controller来对数据变化感知，然后修改集群内的状态。\nCustom Controller custom controller就是用户定义的controller。完成对customer resource内容变更的对应操作。\n将Custom Resource 和Custom Controller结合起来，就是operator模式。\n聚合API和独立API 官方文档很详细，引用一下\n考虑 API 聚合的情况 优选独立 API 的情况 你的 API 是声明式的\n。 你的 API 不符合声明式\n模型。 你希望可以是使用 kubectl 来读写你的新资源类别。 不要求 kubectl 支持。 你希望在 Kubernetes UI （如仪表板）中和其他内置类别一起查看你的新资源类别。 不需要 Kubernetes UI 支持。 你在开发新的 API。 你已经有一个提供 API 服务的程序并且工作良好。 你有意愿取接受 Kubernetes 对 REST 资源路径所作的格式限制，例如 API 组和名字空间。（参阅 API 概述\n） 你需要使用一些特殊的 REST 路径以便与已经定义的 REST API 保持兼容。 你的资源可以自然地界定为集群作用域或集群中某个名字空间作用域。 集群作用域或名字空间作用域这种二分法很不合适；你需要对资源路径的细节进行控制。 你希望复用 Kubernetes API 支持特性\n。 你不需要这类特性。 简单解释就是CRD方式可以使用k8s已有api，当k8s已有api不满足条件时，才使用聚合层api来扩展。\n",
+  "keywords": [
+    "k8s"
+  ],
+  "articleBody": "写在前面 kubebuilder 是一个集成工具，为了更好的理解k8s工作流程。这里使用k8s tools实现一个operator。\n创建CRD Custom Resource 以Resource的角度来审视k8s，可以发现k8s实际上做的事情是对Resource的CRUD操作。\nCustom Resource是一种用户定义的k8s resource数据，可以通过k8s api对定义的Resource进行CRUD操作。\n对于resource本身而言，只是存储结构化的数据，如果期望资源数据改变时集群中状态发生对应变化，就需要有一个Controller来对数据变化感知，然后修改集群内的状态。\nCustom Controller custom controller就是用户定义的controller。完成对customer resource内容变更的对应操作。\n将Custom Resource 和Custom Controller结合起来，就是operator模式。\n聚合API和独立API 官方文档很详细，引用一下\n考虑 API 聚合的情况 优选独立 API 的情况 你的 API 是声明式的\n。 你的 API 不符合声明式\n模型。 你希望可以是使用 kubectl 来读写你的新资源类别。 不要求 kubectl 支持。 你希望在 Kubernetes UI （如仪表板）中和其他内置类别一起查看你的新资源类别。 不需要 Kubernetes UI 支持。 你在开发新的 API。 你已经有一个提供 API 服务的程序并且工作良好。 你有意愿取接受 Kubernetes 对 REST 资源路径所作的格式限制，例如 API 组和名字空间。（参阅 API 概述\n） 你需要使用一些特殊的 REST 路径以便与已经定义的 REST API 保持兼容。 你的资源可以自然地界定为集群作用域或集群中某个名字空间作用域。 集群作用域或名字空间作用域这种二分法很不合适；你需要对资源路径的细节进行控制。 你希望复用 Kubernetes API 支持特性\n。 你不需要这类特性。 简单解释就是CRD方式可以使用k8s已有api，当k8s已有api不满足条件时，才使用聚合层api来扩展。\n因此大部分情况都是使用CRD而不必使用聚合层API。\nCRD 创建一个简单的CRD用来部署nginx\napiVersion: apiextensions.k8s.io/v1 kind: CustomResourceDefinition metadata: # 名字必需与下面的 spec 字段匹配，并且格式为 '\u003c名称的复数形式\u003e.\u003c组名\u003e' name: nginxes.ldq.test.com spec: # 组名称，用于 REST API: /apis/\u003c组\u003e/\u003c版本\u003e group: ldq.test.com # 列举此 CustomResourceDefinition 所支持的版本 versions: - name: v1 # 每个版本都可以通过 served 标志来独立启用或禁止 served: true # 其中一个且只有一个版本必需被标记为存储版本 storage: true schema: openAPIV3Schema: type: object properties: spec: type: object properties: image: type: string replicas: type: integer # 可以是 Namespaced 或 Cluster scope: Namespaced names: # 名称的复数形式，用于 URL：/apis/\u003c组\u003e/\u003c版本\u003e/\u003c名称的复数形式\u003e plural: nginxes # 名称的单数形式，作为命令行使用时和显示时的别名 singular: nginx # kind 通常是单数形式的驼峰命名（CamelCased）形式。你的资源清单会使用这一形式。 kind: Nginx # shortNames 允许你在命令行使用较短的字符串来匹配资源 shortNames: - ng 部署\napiVersion: \"ldq.test.com/v1\" kind: Nginx metadata: name: new-nginx spec: image: nginx replicas: 1 查看部署的资源\nroot@lidongqi:~/k8s/operator/steps/nginx# kubectl get ng NAME AGE my-new-cron-object 30s 编写controller code-generator K8s code generator 在 k8s 源码中大量使用，主要是生成API代码、Client代码。\ngit clone https://github.com/kubernetes/code-generator.git cd code-generator/cmd go install ./* doc.go doc.go是代码生成的重要配置，为代码生成提供声明\n// +k8s:deepcopy-gen=package deepcopy-gen配置 // +k8s:defaulter-gen=TypeMeta defaulter-gen配置 // +groupName=ldq.test.com package v1 types.go声明类型\npackage v1 import metav1 \"k8s.io/apimachinery/pkg/apis/meta/v1\" type NginxSpec struct { // +optional Image string `json:\"image,omitempty\" protobuf:\"bytes,2,opt,name=image\"` Replicas int32 `json:\"replicas\" protobuf:\"varint,1,opt,name=replicas\"` } type NginxStatus struct { // +optional Message string `json:\"message,omitempty\" protobuf:\"bytes,1,opt,name=message\"` // +optional Reason string `json:\"reason,omitempty\" protobuf:\"bytes,2,opt,name=reason\"` } // +genclient // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object // Nginx type type Nginx struct { metav1.TypeMeta `json:\",inline\"` // +optional metav1.ObjectMeta `json:\"metadata,omitempty\" protobuf:\"bytes,1,opt,name=metadata\"` // +optional Spec NginxSpec `json:\"spec,omitempty\" protobuf:\"bytes,2,opt,name=spec\"` // +optional Status NginxStatus `json:\"status,omitempty\" protobuf:\"bytes,3,opt,name=status\"` } // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object // NginxList is a list of Nginx resources type NginxList struct { metav1.TypeMeta `json:\",inline\"` metav1.ListMeta `json:\"metadata\"` Items []Nginx `json:\"items\"` } update-codegen.sh 生成脚本，根据code-generator 中的update-codegen.sh修改而来。\n#!/usr/bin/env bash # Copyright 2017 The Kubernetes Authors. # # Licensed under the Apache License, Version 2.0 (the \"License\"); # you may not use this file except in compliance with the License. # You may obtain a copy of the License at # # http://www.apache.org/licenses/LICENSE-2.0 # # Unless required by applicable law or agreed to in writing, software # distributed under the License is distributed on an \"AS IS\" BASIS, # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. # See the License for the specific language governing permissions and # limitations under the License. set -o errexit set -o nounset set -o pipefail SCRIPT_ROOT=$(dirname \"${BASH_SOURCE[0]}\")/.. CODEGEN_PKG=/home/lidongqi/work/k8s/k8s.io/code-generator source \"${CODEGEN_PKG}/kube_codegen.sh\" # generate the code with: # --output-base because this script should also be able to run inside the vendor dir of # k8s.io/kubernetes. The output-base is needed for the generators to output into the vendor dir # instead of the $GOPATH directly. For normal projects this can be dropped. export KUBE_VERBOSE=2 #-i 是一个package路径，不要最后的 '/' register-gen -v ${KUBE_VERBOSE} -i github.com/lidongqi/demo-controller/apis/ldq.test.com/v1 \\ --go-header-file \"${SCRIPT_ROOT}/hack/boilerplate.go.txt\" \\ -o \"$(dirname \"${BASH_SOURCE[0]}\")/../../../..\" #此处的目录层级和go.mod中的package路径对应。如果module github.com/lidongqi/demo-controller #则需要/../../../..向上寻找4级目录（因为当前实在hack目录下） kube::codegen::gen_helpers \\ --input-pkg-root github.com/lidongqi/demo-controller/apis \\ --output-base \"$(dirname \"${BASH_SOURCE[0]}\")/../../../..\" \\ --boilerplate \"${SCRIPT_ROOT}/hack/boilerplate.go.txt\" kube::codegen::gen_client \\ --with-watch \\ --input-pkg-root github.com/lidongqi/demo-controller/apis \\ --output-pkg-root github.com/lidongqi/demo-controller/generated \\ --output-base \"$(dirname \"${BASH_SOURCE[0]}\")/../../../..\" \\ --boilerplate \"${SCRIPT_ROOT}/hack/boilerplate.go.txt\" ",
+  "wordCount" : "518",
+  "inLanguage": "zh",
+  "datePublished": "2024-11-13T16:33:24+08:00",
+  "dateModified": "2024-11-13T16:33:24+08:00",
+  "author":{
+    "@type": "Person",
+    "name": "lidongqi"
+  },
+  "mainEntityOfPage": {
+    "@type": "WebPage",
+    "@id": "https://lidongqi.github.io/posts/nginx-operator_1/"
+  },
+  "publisher": {
+    "@type": "Organization",
+    "name": "lidongqi",
+    "logo": {
+      "@type": "ImageObject",
+      "url": "https://lidongqi.github.io/favicon.ico"
+    }
+  }
+}
+</script>
+</head>
+
+<body class="" id="top">
+<script>
+    if (localStorage.getItem("pref-theme") === "dark") {
+        document.body.classList.add('dark');
+    } else if (localStorage.getItem("pref-theme") === "light") {
+        document.body.classList.remove('dark')
+    } else if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
+        document.body.classList.add('dark');
+    }
+
+</script>
+
+<header class="header">
+    <nav class="nav">
+        <div class="logo">
+            <a href="https://lidongqi.github.io/" accesskey="h" title="lidongqi (Alt + H)">lidongqi</a>
+            <div class="logo-switches">
+                <button id="theme-toggle" accesskey="t" title="(Alt + T)">
+                    <svg id="moon" xmlns="http://www.w3.org/2000/svg" width="24" height="18" viewBox="0 0 24 24"
+                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                        stroke-linejoin="round">
+                        <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+                    </svg>
+                    <svg id="sun" xmlns="http://www.w3.org/2000/svg" width="24" height="18" viewBox="0 0 24 24"
+                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                        stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="5"></circle>
+                        <line x1="12" y1="1" x2="12" y2="3"></line>
+                        <line x1="12" y1="21" x2="12" y2="23"></line>
+                        <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+                        <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+                        <line x1="1" y1="12" x2="3" y2="12"></line>
+                        <line x1="21" y1="12" x2="23" y2="12"></line>
+                        <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+                        <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+                    </svg>
+                </button>
+            </div>
+        </div>
+        <ul id="menu">
+            <li>
+                <a href="https://lidongqi.github.io/categories/" title="分类">
+                    <span>分类</span>
+                </a>
+            </li>
+            <li>
+                <a href="https://lidongqi.github.io/tags/" title="标签">
+                    <span>标签</span>
+                </a>
+            </li>
+        </ul>
+    </nav>
+</header>
+<main class="main">
+
+<article class="post-single">
+  <header class="post-header">
+    
+    <h1 class="post-title entry-hint-parent">
+      实现一个operator（1）
+    </h1>
+    <div class="post-meta"><span title='2024-11-13 16:33:24 +0800 CST'>十一月 13, 2024</span>&nbsp;·&nbsp;lidongqi
+
+</div>
+  </header> 
+  <div class="post-content"><h1 id="写在前面">写在前面<a hidden class="anchor" aria-hidden="true" href="#写在前面">#</a></h1>
+<p>kubebuilder 是一个集成工具，为了更好的理解k8s工作流程。这里使用k8s tools实现一个operator。</p>
+<h1 id="创建crd">创建CRD<a hidden class="anchor" aria-hidden="true" href="#创建crd">#</a></h1>
+<h2 id="custom-resource">Custom Resource<a hidden class="anchor" aria-hidden="true" href="#custom-resource">#</a></h2>
+<p>以Resource的角度来审视k8s，可以发现k8s实际上做的事情是对Resource的CRUD操作。</p>
+<p>Custom Resource是一种用户定义的k8s resource数据，可以通过k8s api对定义的Resource进行CRUD操作。</p>
+<p>对于resource本身而言，只是存储结构化的数据，如果期望资源数据改变时集群中状态发生对应变化，就需要有一个Controller来对数据变化感知，然后修改集群内的状态。</p>
+<h2 id="custom-controller">Custom Controller<a hidden class="anchor" aria-hidden="true" href="#custom-controller">#</a></h2>
+<p>custom controller就是用户定义的controller。完成对customer resource内容变更的对应操作。</p>
+<p>将Custom Resource 和Custom Controller结合起来，就是operator模式。</p>
+<h2 id="聚合api和独立api">聚合API和独立API<a hidden class="anchor" aria-hidden="true" href="#聚合api和独立api">#</a></h2>
+<p><a href="https://kubernetes.io/zh-cn/docs/concepts/extend-kubernetes/api-extension/custom-resources/#should-i-add-a-cr-to-my-k8s-cluster">官方文档</a>很详细，引用一下</p>
+<table>
+  <thead>
+      <tr>
+          <th></th>
+          <th></th>
+      </tr>
+  </thead>
+  <tbody>
+      <tr>
+          <td>考虑 API 聚合的情况</td>
+          <td>优选独立 API 的情况</td>
+      </tr>
+      <tr>
+          <td>你的 API 是<a href="https://kubernetes.io/zh-cn/docs/concepts/extend-kubernetes/api-extension/custom-resources/#declarative-apis">声明式的</a><br><br>。</td>
+          <td>你的 API 不符合<a href="https://kubernetes.io/zh-cn/docs/concepts/extend-kubernetes/api-extension/custom-resources/#declarative-apis">声明式</a><br><br>模型。</td>
+      </tr>
+      <tr>
+          <td>你希望可以是使用 kubectl 来读写你的新资源类别。</td>
+          <td>不要求 kubectl 支持。</td>
+      </tr>
+      <tr>
+          <td>你希望在 Kubernetes UI （如仪表板）中和其他内置类别一起查看你的新资源类别。</td>
+          <td>不需要 Kubernetes UI 支持。</td>
+      </tr>
+      <tr>
+          <td>你在开发新的 API。</td>
+          <td>你已经有一个提供 API 服务的程序并且工作良好。</td>
+      </tr>
+      <tr>
+          <td>你有意愿取接受 Kubernetes 对 REST 资源路径所作的格式限制，例如 API 组和名字空间。（参阅 <a href="https://kubernetes.io/zh-cn/docs/concepts/overview/kubernetes-api/">API 概述</a><br><br>）</td>
+          <td>你需要使用一些特殊的 REST 路径以便与已经定义的 REST API 保持兼容。</td>
+      </tr>
+      <tr>
+          <td>你的资源可以自然地界定为集群作用域或集群中某个名字空间作用域。</td>
+          <td>集群作用域或名字空间作用域这种二分法很不合适；你需要对资源路径的细节进行控制。</td>
+      </tr>
+      <tr>
+          <td>你希望复用 <a href="https://kubernetes.io/zh-cn/docs/concepts/extend-kubernetes/api-extension/custom-resources/#common-features">Kubernetes API 支持特性</a><br><br>。</td>
+          <td>你不需要这类特性。</td>
+      </tr>
+  </tbody>
+</table>
+<p>简单解释就是CRD方式可以使用k8s已有api，当k8s已有api不满足条件时，才使用聚合层api来扩展。</p>
+<p>因此大部分情况都是使用CRD而不必使用聚合层API。</p>
+<h2 id="crd">CRD<a hidden class="anchor" aria-hidden="true" href="#crd">#</a></h2>
+<p>创建一个简单的CRD用来部署nginx</p>
+<pre tabindex="0"><code>apiVersion: apiextensions.k8s.io/v1
+kind: CustomResourceDefinition
+metadata:
+  # 名字必需与下面的 spec 字段匹配，并且格式为 &#39;&lt;名称的复数形式&gt;.&lt;组名&gt;&#39;
+  name: nginxes.ldq.test.com
+spec:
+  # 组名称，用于 REST API: /apis/&lt;组&gt;/&lt;版本&gt;
+  group: ldq.test.com
+  # 列举此 CustomResourceDefinition 所支持的版本
+  versions:
+    - name: v1
+      # 每个版本都可以通过 served 标志来独立启用或禁止
+      served: true
+      # 其中一个且只有一个版本必需被标记为存储版本
+      storage: true
+      schema:
+        openAPIV3Schema:
+          type: object
+          properties:
+            spec:
+              type: object
+              properties:
+                image:
+                  type: string
+                replicas:
+                  type: integer
+  # 可以是 Namespaced 或 Cluster
+  scope: Namespaced
+  names:
+    # 名称的复数形式，用于 URL：/apis/&lt;组&gt;/&lt;版本&gt;/&lt;名称的复数形式&gt;
+    plural: nginxes
+    # 名称的单数形式，作为命令行使用时和显示时的别名
+    singular: nginx
+    # kind 通常是单数形式的驼峰命名（CamelCased）形式。你的资源清单会使用这一形式。
+    kind: Nginx
+    # shortNames 允许你在命令行使用较短的字符串来匹配资源
+    shortNames:
+    - ng
+</code></pre><p>部署</p>
+<pre tabindex="0"><code>apiVersion: &#34;ldq.test.com/v1&#34;
+kind: Nginx
+metadata:
+  name: new-nginx
+spec:
+  image: nginx
+  replicas: 1
+</code></pre><p>查看部署的资源</p>
+<pre tabindex="0"><code>root@lidongqi:~/k8s/operator/steps/nginx# kubectl  get ng
+NAME                 AGE
+my-new-cron-object   30s
+</code></pre><h1 id="编写controller">编写controller<a hidden class="anchor" aria-hidden="true" href="#编写controller">#</a></h1>
+<h2 id="code-generator">code-generator<a hidden class="anchor" aria-hidden="true" href="#code-generator">#</a></h2>
+<p>K8s code generator 在 k8s 源码中大量使用，主要是生成API代码、Client代码。</p>
+<pre tabindex="0"><code>git clone https://github.com/kubernetes/code-generator.git
+cd code-generator/cmd
+go install ./*
+</code></pre><h2 id="docgo">doc.go<a hidden class="anchor" aria-hidden="true" href="#docgo">#</a></h2>
+<p>doc.go是代码生成的重要配置，为代码生成提供声明</p>
+<pre tabindex="0"><code>// +k8s:deepcopy-gen=package deepcopy-gen配置
+// +k8s:defaulter-gen=TypeMeta defaulter-gen配置
+// +groupName=ldq.test.com
+
+package v1
+</code></pre><p>types.go声明类型</p>
+<pre tabindex="0"><code>package v1
+
+import metav1 &#34;k8s.io/apimachinery/pkg/apis/meta/v1&#34;
+
+type NginxSpec struct {
+	// +optional
+	Image    string `json:&#34;image,omitempty&#34; protobuf:&#34;bytes,2,opt,name=image&#34;`
+	Replicas int32  `json:&#34;replicas&#34; protobuf:&#34;varint,1,opt,name=replicas&#34;`
+}
+
+type NginxStatus struct {
+	// +optional
+	Message string `json:&#34;message,omitempty&#34; protobuf:&#34;bytes,1,opt,name=message&#34;`
+	// +optional
+	Reason string `json:&#34;reason,omitempty&#34; protobuf:&#34;bytes,2,opt,name=reason&#34;`
+}
+
+// +genclient
+// +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
+
+// Nginx type
+type Nginx struct {
+	metav1.TypeMeta `json:&#34;,inline&#34;`
+
+	// +optional
+	metav1.ObjectMeta `json:&#34;metadata,omitempty&#34; protobuf:&#34;bytes,1,opt,name=metadata&#34;`
+
+	// +optional
+	Spec NginxSpec `json:&#34;spec,omitempty&#34; protobuf:&#34;bytes,2,opt,name=spec&#34;`
+
+	// +optional
+	Status NginxStatus `json:&#34;status,omitempty&#34; protobuf:&#34;bytes,3,opt,name=status&#34;`
+}
+
+// +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
+
+// NginxList is a list of Nginx resources
+type NginxList struct {
+	metav1.TypeMeta `json:&#34;,inline&#34;`
+	metav1.ListMeta `json:&#34;metadata&#34;`
+
+	Items []Nginx `json:&#34;items&#34;`
+}
+</code></pre><h2 id="update-codegensh">update-codegen.sh<a hidden class="anchor" aria-hidden="true" href="#update-codegensh">#</a></h2>
+<p>生成脚本，根据code-generator 中的update-codegen.sh修改而来。</p>
+<pre tabindex="0"><code>#!/usr/bin/env bash
+
+# Copyright 2017 The Kubernetes Authors.
+#
+# Licensed under the Apache License, Version 2.0 (the &#34;License&#34;);
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an &#34;AS IS&#34; BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+set -o errexit
+set -o nounset
+set -o pipefail
+
+SCRIPT_ROOT=$(dirname &#34;${BASH_SOURCE[0]}&#34;)/..
+CODEGEN_PKG=/home/lidongqi/work/k8s/k8s.io/code-generator
+
+source &#34;${CODEGEN_PKG}/kube_codegen.sh&#34;
+
+# generate the code with:
+# --output-base    because this script should also be able to run inside the vendor dir of
+#                  k8s.io/kubernetes. The output-base is needed for the generators to output into the vendor dir
+#                  instead of the $GOPATH directly. For normal projects this can be dropped.
+export KUBE_VERBOSE=2
+
+#-i 是一个package路径，不要最后的 &#39;/&#39;
+register-gen -v ${KUBE_VERBOSE} -i github.com/lidongqi/demo-controller/apis/ldq.test.com/v1 \
+--go-header-file &#34;${SCRIPT_ROOT}/hack/boilerplate.go.txt&#34; \
+-o &#34;$(dirname &#34;${BASH_SOURCE[0]}&#34;)/../../../..&#34; 
+#此处的目录层级和go.mod中的package路径对应。如果module github.com/lidongqi/demo-controller
+#则需要/../../../..向上寻找4级目录（因为当前实在hack目录下）
+
+kube::codegen::gen_helpers \
+    --input-pkg-root github.com/lidongqi/demo-controller/apis \
+    --output-base &#34;$(dirname &#34;${BASH_SOURCE[0]}&#34;)/../../../..&#34; \
+    --boilerplate &#34;${SCRIPT_ROOT}/hack/boilerplate.go.txt&#34;
+
+kube::codegen::gen_client \
+    --with-watch \
+    --input-pkg-root github.com/lidongqi/demo-controller/apis \
+    --output-pkg-root github.com/lidongqi/demo-controller/generated \
+    --output-base &#34;$(dirname &#34;${BASH_SOURCE[0]}&#34;)/../../../..&#34; \
+    --boilerplate &#34;${SCRIPT_ROOT}/hack/boilerplate.go.txt&#34;
+</code></pre>
+
+  </div>
+
+  <footer class="post-footer">
+    <ul class="post-tags">
+    </ul>
+  </footer>
+
+  <script src="https://giscus.app/client.js"
+    data-repo="lidongqi/lidongqi.github.io"
+    data-repo-id="MDEwOlJlcG9zaXRvcnk4MTQyNjIwMw=="
+    data-category="Announcements"
+    data-category-id="DIC_kwDOBNp3G84CkSL_"
+    data-mapping="pathname"
+    data-strict="0"
+    data-reactions-enabled="1"
+    data-emit-metadata="0"
+    data-input-position="bottom"
+    data-theme="preferred_color_scheme"
+    data-lang="zh-CN"
+    crossorigin="anonymous"
+    async>
+  </script>
+</article>
+    </main>
+    
+<footer class="footer">
+        <span>&copy; 2024 <a href="https://lidongqi.github.io/">lidongqi</a></span> · 
+
+    <span>
+        Powered by
+        <a href="https://gohugo.io/" rel="noopener noreferrer" target="_blank">Hugo</a> &
+        <a href="https://github.com/adityatelange/hugo-PaperMod/" rel="noopener" target="_blank">PaperMod</a>
+    </span>
+</footer>
+<a href="#top" aria-label="go to top" title="Go to Top (Alt + G)" class="top-link" id="top-link" accesskey="g">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 12 6" fill="currentColor">
+        <path d="M12 6H0l6-6z" />
+    </svg>
+</a>
+
+<script>
+    let menu = document.getElementById('menu')
+    if (menu) {
+        menu.scrollLeft = localStorage.getItem("menu-scroll-position");
+        menu.onscroll = function () {
+            localStorage.setItem("menu-scroll-position", menu.scrollLeft);
+        }
+    }
+
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+        anchor.addEventListener("click", function (e) {
+            e.preventDefault();
+            var id = this.getAttribute("href").substr(1);
+            if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+                document.querySelector(`[id='${decodeURIComponent(id)}']`).scrollIntoView({
+                    behavior: "smooth"
+                });
+            } else {
+                document.querySelector(`[id='${decodeURIComponent(id)}']`).scrollIntoView();
+            }
+            if (id === "top") {
+                history.replaceState(null, null, " ");
+            } else {
+                history.pushState(null, null, `#${id}`);
+            }
+        });
+    });
+
+</script>
+<script>
+    var mybutton = document.getElementById("top-link");
+    window.onscroll = function () {
+        if (document.body.scrollTop > 800 || document.documentElement.scrollTop > 800) {
+            mybutton.style.visibility = "visible";
+            mybutton.style.opacity = "1";
+        } else {
+            mybutton.style.visibility = "hidden";
+            mybutton.style.opacity = "0";
+        }
+    };
+
+</script>
+<script>
+    document.getElementById("theme-toggle").addEventListener("click", () => {
+        if (document.body.className.includes("dark")) {
+            document.body.classList.remove('dark');
+            localStorage.setItem("pref-theme", 'light');
+        } else {
+            document.body.classList.add('dark');
+            localStorage.setItem("pref-theme", 'dark');
+        }
+    })
+
+</script>
+</body>
+
+</html>

@@ -6,8 +6,15 @@
     <description>Recent content in Categories on lidongqi</description>
     <generator>Hugo -- 0.137.0</generator>
     <language>zh</language>
-    <lastBuildDate>Tue, 12 Nov 2024 17:59:13 +0800</lastBuildDate>
+    <lastBuildDate>Wed, 13 Nov 2024 16:33:24 +0800</lastBuildDate>
     <atom:link href="https://lidongqi.github.io/categories/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>云原生</title>
+      <link>https://lidongqi.github.io/categories/%E4%BA%91%E5%8E%9F%E7%94%9F/</link>
+      <pubDate>Wed, 13 Nov 2024 16:33:24 +0800</pubDate>
+      <guid>https://lidongqi.github.io/categories/%E4%BA%91%E5%8E%9F%E7%94%9F/</guid>
+      <description></description>
+    </item>
     <item>
       <title>Llm</title>
       <link>https://lidongqi.github.io/categories/llm/</link>
@@ -20,13 +27,6 @@
       <link>https://lidongqi.github.io/categories/python/</link>
       <pubDate>Sun, 10 Nov 2024 17:10:13 +0800</pubDate>
       <guid>https://lidongqi.github.io/categories/python/</guid>
-      <description></description>
-    </item>
-    <item>
-      <title>云原生</title>
-      <link>https://lidongqi.github.io/categories/%E4%BA%91%E5%8E%9F%E7%94%9F/</link>
-      <pubDate>Wed, 06 Nov 2024 15:11:16 +0800</pubDate>
-      <guid>https://lidongqi.github.io/categories/%E4%BA%91%E5%8E%9F%E7%94%9F/</guid>
       <description></description>
     </item>
   </channel>

@@ -6,8 +6,69 @@
     <description>Recent content on lidongqi</description>
     <generator>Hugo -- 0.137.0</generator>
     <language>zh</language>
-    <lastBuildDate>Tue, 12 Nov 2024 17:59:13 +0800</lastBuildDate>
+    <lastBuildDate>Wed, 13 Nov 2024 16:33:24 +0800</lastBuildDate>
     <atom:link href="https://lidongqi.github.io/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>实现一个operator（1）</title>
+      <link>https://lidongqi.github.io/posts/nginx-operator_1/</link>
+      <pubDate>Wed, 13 Nov 2024 16:33:24 +0800</pubDate>
+      <guid>https://lidongqi.github.io/posts/nginx-operator_1/</guid>
+      <description>&lt;h1 id=&#34;写在前面&#34;&gt;写在前面&lt;/h1&gt;
+&lt;p&gt;kubebuilder 是一个集成工具，为了更好的理解k8s工作流程。这里使用k8s tools实现一个operator。&lt;/p&gt;
+&lt;h1 id=&#34;创建crd&#34;&gt;创建CRD&lt;/h1&gt;
+&lt;h2 id=&#34;custom-resource&#34;&gt;Custom Resource&lt;/h2&gt;
+&lt;p&gt;以Resource的角度来审视k8s，可以发现k8s实际上做的事情是对Resource的CRUD操作。&lt;/p&gt;
+&lt;p&gt;Custom Resource是一种用户定义的k8s resource数据，可以通过k8s api对定义的Resource进行CRUD操作。&lt;/p&gt;
+&lt;p&gt;对于resource本身而言，只是存储结构化的数据，如果期望资源数据改变时集群中状态发生对应变化，就需要有一个Controller来对数据变化感知，然后修改集群内的状态。&lt;/p&gt;
+&lt;h2 id=&#34;custom-controller&#34;&gt;Custom Controller&lt;/h2&gt;
+&lt;p&gt;custom controller就是用户定义的controller。完成对customer resource内容变更的对应操作。&lt;/p&gt;
+&lt;p&gt;将Custom Resource 和Custom Controller结合起来，就是operator模式。&lt;/p&gt;
+&lt;h2 id=&#34;聚合api和独立api&#34;&gt;聚合API和独立API&lt;/h2&gt;
+&lt;p&gt;&lt;a href=&#34;https://kubernetes.io/zh-cn/docs/concepts/extend-kubernetes/api-extension/custom-resources/#should-i-add-a-cr-to-my-k8s-cluster&#34;&gt;官方文档&lt;/a&gt;很详细，引用一下&lt;/p&gt;
+&lt;table&gt;
+  &lt;thead&gt;
+      &lt;tr&gt;
+          &lt;th&gt;&lt;/th&gt;
+          &lt;th&gt;&lt;/th&gt;
+      &lt;/tr&gt;
+  &lt;/thead&gt;
+  &lt;tbody&gt;
+      &lt;tr&gt;
+          &lt;td&gt;考虑 API 聚合的情况&lt;/td&gt;
+          &lt;td&gt;优选独立 API 的情况&lt;/td&gt;
+      &lt;/tr&gt;
+      &lt;tr&gt;
+          &lt;td&gt;你的 API 是&lt;a href=&#34;https://kubernetes.io/zh-cn/docs/concepts/extend-kubernetes/api-extension/custom-resources/#declarative-apis&#34;&gt;声明式的&lt;/a&gt;&lt;br&gt;&lt;br&gt;。&lt;/td&gt;
+          &lt;td&gt;你的 API 不符合&lt;a href=&#34;https://kubernetes.io/zh-cn/docs/concepts/extend-kubernetes/api-extension/custom-resources/#declarative-apis&#34;&gt;声明式&lt;/a&gt;&lt;br&gt;&lt;br&gt;模型。&lt;/td&gt;
+      &lt;/tr&gt;
+      &lt;tr&gt;
+          &lt;td&gt;你希望可以是使用 kubectl 来读写你的新资源类别。&lt;/td&gt;
+          &lt;td&gt;不要求 kubectl 支持。&lt;/td&gt;
+      &lt;/tr&gt;
+      &lt;tr&gt;
+          &lt;td&gt;你希望在 Kubernetes UI （如仪表板）中和其他内置类别一起查看你的新资源类别。&lt;/td&gt;
+          &lt;td&gt;不需要 Kubernetes UI 支持。&lt;/td&gt;
+      &lt;/tr&gt;
+      &lt;tr&gt;
+          &lt;td&gt;你在开发新的 API。&lt;/td&gt;
+          &lt;td&gt;你已经有一个提供 API 服务的程序并且工作良好。&lt;/td&gt;
+      &lt;/tr&gt;
+      &lt;tr&gt;
+          &lt;td&gt;你有意愿取接受 Kubernetes 对 REST 资源路径所作的格式限制，例如 API 组和名字空间。（参阅 &lt;a href=&#34;https://kubernetes.io/zh-cn/docs/concepts/overview/kubernetes-api/&#34;&gt;API 概述&lt;/a&gt;&lt;br&gt;&lt;br&gt;）&lt;/td&gt;
+          &lt;td&gt;你需要使用一些特殊的 REST 路径以便与已经定义的 REST API 保持兼容。&lt;/td&gt;
+      &lt;/tr&gt;
+      &lt;tr&gt;
+          &lt;td&gt;你的资源可以自然地界定为集群作用域或集群中某个名字空间作用域。&lt;/td&gt;
+          &lt;td&gt;集群作用域或名字空间作用域这种二分法很不合适；你需要对资源路径的细节进行控制。&lt;/td&gt;
+      &lt;/tr&gt;
+      &lt;tr&gt;
+          &lt;td&gt;你希望复用 &lt;a href=&#34;https://kubernetes.io/zh-cn/docs/concepts/extend-kubernetes/api-extension/custom-resources/#common-features&#34;&gt;Kubernetes API 支持特性&lt;/a&gt;&lt;br&gt;&lt;br&gt;。&lt;/td&gt;
+          &lt;td&gt;你不需要这类特性。&lt;/td&gt;
+      &lt;/tr&gt;
+  &lt;/tbody&gt;
+&lt;/table&gt;
+&lt;p&gt;简单解释就是CRD方式可以使用k8s已有api，当k8s已有api不满足条件时，才使用聚合层api来扩展。&lt;/p&gt;</description>
+    </item>
     <item>
       <title>ollama自定义模型</title>
       <link>https://lidongqi.github.io/posts/ollama_new_model/</link>

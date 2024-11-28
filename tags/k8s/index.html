@@ -5,11 +5,11 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 <meta name="robots" content="index, follow">
-<title>Posts | lidongqi</title>
+<title>K8s | lidongqi</title>
 <meta name="keywords" content="">
-<meta name="description" content="Posts - lidongqi">
+<meta name="description" content="">
 <meta name="author" content="lidongqi">
-<link rel="canonical" href="https://lidongqi.github.io/posts/">
+<link rel="canonical" href="https://lidongqi.github.io/tags/k8s/">
 <link crossorigin="anonymous" href="/assets/css/stylesheet.fc220c15db4aef0318bbf30adc45d33d4d7c88deff3238b23eb255afdc472ca6.css" integrity="sha256-/CIMFdtK7wMYu/MK3EXTPU18iN7/MjiyPrJVr9xHLKY=" rel="preload stylesheet" as="style">
 <link rel="icon" href="https://lidongqi.github.io/favicon.ico">
 <link rel="icon" type="image/png" sizes="16x16" href="https://lidongqi.github.io/favicon-16x16.png">
@@ -18,8 +18,8 @@
 <link rel="mask-icon" href="https://lidongqi.github.io/safari-pinned-tab.svg">
 <meta name="theme-color" content="#2e2e33">
 <meta name="msapplication-TileColor" content="#2e2e33">
-<link rel="alternate" type="application/rss+xml" href="https://lidongqi.github.io/posts/index.xml">
-<link rel="alternate" hreflang="zh" href="https://lidongqi.github.io/posts/">
+<link rel="alternate" type="application/rss+xml" href="https://lidongqi.github.io/tags/k8s/index.xml">
+<link rel="alternate" hreflang="zh" href="https://lidongqi.github.io/tags/k8s/">
 <noscript>
     <style>
         #theme-toggle,
@@ -56,29 +56,14 @@
         }
 
     </style>
-</noscript><meta property="og:title" content="Posts">
+</noscript><meta property="og:title" content="K8s">
 <meta property="og:description" content="">
 <meta property="og:type" content="website">
-<meta property="og:url" content="https://lidongqi.github.io/posts/">
+<meta property="og:url" content="https://lidongqi.github.io/tags/k8s/">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="Posts">
+<meta name="twitter:title" content="K8s">
 <meta name="twitter:description" content="">
 
-
-<script type="application/ld+json">
-{
-  "@context": "https://schema.org",
-  "@type": "BreadcrumbList",
-  "itemListElement": [
-    {
-      "@type": "ListItem",
-      "position":  1 ,
-      "name": "Posts",
-      "item": "https://lidongqi.github.io/posts/"
-    }
-  ]
-}
-</script>
 </head>
 
 <body class="list" id="top">
@@ -137,11 +122,11 @@
 <main class="main"> 
 <header class="page-header">
   <h1>
-    Posts
+    K8s
   </h1>
 </header>
 
-<article class="post-entry"> 
+<article class="post-entry tag-entry"> 
   <header class="entry-header">
     <h2 class="entry-hint-parent">实现一个operator（1）
     </h2>
@@ -163,63 +148,6 @@ Custom Controller custom controller就是用户定义的controller。完成对cu
   </div>
   <footer class="entry-footer"><span title='2024-11-13 16:33:24 +0800 CST'>十一月 13, 2024</span>&nbsp;·&nbsp;lidongqi</footer>
   <a class="entry-link" aria-label="post link to 实现一个operator（1）" href="https://lidongqi.github.io/posts/nginx-operator_1/"></a>
-</article>
-
-<article class="post-entry"> 
-  <header class="entry-header">
-    <h2 class="entry-hint-parent">ollama自定义模型
-    </h2>
-  </header>
-  <div class="entry-content">
-    <p>有时候需要调整一些模型参数，可以使用ollama模型的自定义功能 以 qwen2.5-coder:32b 为例，修改上下文长度 # 修改modelfile ## 获取modelfile
-ollama show --modelfile qwen2.5-coder:32b &gt; qwen2.5-coder-32b 修改配置 添加ctx长度，修改为32768，默认长度都是2048。
-vi qwen2.5-coder-32b 文档末尾添加
-PARAMETER num_ctx 32768 创建自定义model 使用ollama create创建新model即可
-ollama create qwen2.5-coder-32b-ctx-max -f qwen2.5-coder-32b 完成以后ollama list即可看到新模型
-qwen2.5-config % ollama list NAME ID SIZE MODIFIED qwen2.5-coder-32b-ctx-max:latest d4ab1461e7a9 19 GB 54 seconds ago bge-large:latest b3d71c928059 670 MB 7 days ago qwen2.5-coder:32b 4bd6cbf2d094 19 GB 8 days ago 再调用时qwen2.5-coder-32b-ctx-max 默认可以处理的上下文就是32k
-</p>
-  </div>
-  <footer class="entry-footer"><span title='2024-11-12 17:59:13 +0800 CST'>十一月 12, 2024</span>&nbsp;·&nbsp;lidongqi</footer>
-  <a class="entry-link" aria-label="post link to ollama自定义模型" href="https://lidongqi.github.io/posts/ollama_new_model/"></a>
-</article>
-
-<article class="post-entry"> 
-  <header class="entry-header">
-    <h2 class="entry-hint-parent">python防止反编译打包
-    </h2>
-  </header>
-  <div class="entry-content">
-    <p>cython cython是针对python和cython的的优化静态编译器。 主要作用是对python进行c扩展，其采用的方式是将python代码转换为c代码，然后将c代码编译为动态链接库（.so格式）。然后通过python或者c代码调用。 适用场景：
-结构简单的原生python代码编译为静态链接库 使用cython编写代码 不适用场景： 已经编写好的python工程 &gt; 完成度比较高的工程实用cython编译会有功能不支持，打包失败等问题。如果如数解决这些问题，则需要修改/重构代码。 pyinstaller 可以轻松被反编译，所以放弃该选择
-nuitka 实现原理和cython基本一致，循序流程：python代码-&gt;c代码-&gt;动态连接文件-&gt;可执行程序。 安装
-pip install nuitka 一些经验 对于桌面程序，打包一个文件
-python -m nuitka main.py --standalone --onefile --follow-imports 对于后端应用，过程相对复杂了一些。主要有以下几个原因
-standalone方式 后端程序依赖关系复杂，打包过程较慢 有以下库需要包含metadata，需要指定–include-distribution-metadata=packagename来包含metadata 非standalone 依赖关系复杂，有一些包需要手动添加。确定的方式基本上就是每次添加完成后验证当前二进制程序是否可以直接执行，否则继续查找问题，添加/删除依赖的package 注意使用的python版本和nuitka版本匹配。有时需要调整python、nuitka、使用的三方库版本，最好让三者保持稳定。 fastapi和asyncio是大部分问题的源头 过程简要记录 假设当前项目结构：
-- package1 - package2 - package3 - main.py 则对应的命令为:
-python -m nuitka main.py --include-package=package1 \ --include-package=package2 \ --include-package=package3 打包完成后会有main.bin文件输出。但根据项目的复杂程度，可能一次成功，也可能运行失败。
-大部分问题都是fastapi和asyncio引起的。 比如运行时遇到如下问题： File &#34;/opt/anaconda3/envs/packagetest/lib/python3.10/site-packages/httpx/_client.py&#34;, line 1674, in send response = await self._send_handling_auth( File &#34;/opt/anaconda3/envs/packagetest/lib/python3.10/site-packages/httpx/_client.py&#34;, line 1702, in _send_handling_auth response = await self._send_handling_redirects( File &#34;/opt/anaconda3/envs/packagetest/lib/python3.10/site-packages/httpx/_client.py&#34;, line 1739, in _send_handling_redirects response = await self._send_single_request(request) File &#34;/opt/anaconda3/envs/packagetest/lib/python3.10/site-packages/httpx/_client.py&#34;, line 1776, in _send_single_request response = await transport.handle_async_request(request) File &#34;/opt/anaconda3/envs/packagetest/lib/python3.10/site-packages/httpx/_transports/default.py&#34;, line 377, in handle_async_request resp = await self._pool.handle_async_request(req) File &#34;/opt/anaconda3/envs/packagetest/lib/python3.10/site-packages/httpcore/_async/connection_pool.py&#34;, line 216, in handle_async_request raise exc from None File &#34;/opt/anaconda3/envs/packagetest/lib/python3.10/site-packages/httpcore/_async/connection_pool.py&#34;, line 196, in handle_async_request response = await connection.handle_async_request( File &#34;/opt/anaconda3/envs/packagetest/lib/python3.10/site-packages/httpcore/_async/connection.py&#34;, line 99, in handle_async_request raise exc File &#34;/opt/anaconda3/envs/packagetest/lib/python3.10/site-packages/httpcore/_async/connection.py&#34;, line 76, in handle_async_request stream = await self._connect(request) File &#34;/opt/anaconda3/envs/packagetest/lib/python3.10/site-packages/httpcore/_async/connection.py&#34;, line 122, in _connect stream = await self._network_backend.connect_tcp(**kwargs) File &#34;/opt/anaconda3/envs/packagetest/lib/python3.10/site-packages/httpcore/_backends/auto.py&#34;, line 30, in connect_tcp return await self._backend.connect_tcp( File &#34;/opt/anaconda3/envs/packagetest/lib/python3.10/site-packages/httpcore/_backends/anyio.py&#34;, line 116, in connect_tcp with anyio.fail_after(timeout): 从日志中可以看出，是调用anyio出了问题，说以这里将anyio添加到打包内容中：
-...</p>
-  </div>
-  <footer class="entry-footer"><span title='2024-11-10 17:10:13 +0800 CST'>十一月 10, 2024</span>&nbsp;·&nbsp;lidongqi</footer>
-  <a class="entry-link" aria-label="post link to python防止反编译打包" href="https://lidongqi.github.io/posts/python_package/"></a>
-</article>
-
-<article class="post-entry"> 
-  <header class="entry-header">
-    <h2 class="entry-hint-parent">容器加密
-    </h2>
-  </header>
-  <div class="entry-content">
-    <p>OCI 容器运行时标准，Open Container Initiative containerd,cri-o,docker,rkt都是OCI的实现。 所以对镜像加密实际上是需要对OCI镜像进行处理。 # containerd containerd 支持对image的加解密具体说明参考containerd文档。 加密的镜像是包含加密blob(二进制对象)的OCI格式的镜像。 # 加密 ## imgcrypt ### install 需要提前准备好golang环境
-git clone https://github.com/containerd/imgcrypt.git cd imgcrypt make sudo make install encrypt 创建RSA key
-openssl genrsa -out mykey.pem openssl rsa -in mykey.pem -pubout -out mypubkey.pem 创建加密镜像
-# 这里使用已经安装好的containerd服务 sudo chmod 0666 /run/containerd/containerd.sock CTR=&#34;/usr/local/bin/ctr-enc&#34; $CTR images pull --all-platforms docker.io/library/bash:latest 查看镜像层数
-$CTR images layerinfo --platform linux/amd64 docker.io/library/bash:latest Pastedimage20241106181333.png 加密
-$CTR images encrypt --recipient jwe:mypubkey.pem --platform linux/amd64 docker.io/library/bash:latest bash.enc:latest 查看镜像层数
-...</p>
-  </div>
-  <footer class="entry-footer"><span title='2024-11-06 15:11:16 +0800 CST'>十一月 6, 2024</span>&nbsp;·&nbsp;lidongqi</footer>
-  <a class="entry-link" aria-label="post link to 容器加密" href="https://lidongqi.github.io/posts/%E5%AE%B9%E5%99%A8%E5%8A%A0%E5%AF%86/"></a>
 </article>
     </main>
     

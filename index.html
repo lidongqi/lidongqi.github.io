@@ -150,6 +150,30 @@
 
 <article class="post-entry"> 
   <header class="entry-header">
+    <h2 class="entry-hint-parent">实现一个operator（1）
+    </h2>
+  </header>
+  <div class="entry-content">
+    <p>写在前面 kubebuilder 是一个集成工具，为了更好的理解k8s工作流程。这里使用k8s tools实现一个operator。
+创建CRD Custom Resource 以Resource的角度来审视k8s，可以发现k8s实际上做的事情是对Resource的CRUD操作。
+Custom Resource是一种用户定义的k8s resource数据，可以通过k8s api对定义的Resource进行CRUD操作。
+对于resource本身而言，只是存储结构化的数据，如果期望资源数据改变时集群中状态发生对应变化，就需要有一个Controller来对数据变化感知，然后修改集群内的状态。
+Custom Controller custom controller就是用户定义的controller。完成对customer resource内容变更的对应操作。
+将Custom Resource 和Custom Controller结合起来，就是operator模式。
+聚合API和独立API 官方文档很详细，引用一下
+考虑 API 聚合的情况 优选独立 API 的情况 你的 API 是声明式的
+。 你的 API 不符合声明式
+模型。 你希望可以是使用 kubectl 来读写你的新资源类别。 不要求 kubectl 支持。 你希望在 Kubernetes UI （如仪表板）中和其他内置类别一起查看你的新资源类别。 不需要 Kubernetes UI 支持。 你在开发新的 API。 你已经有一个提供 API 服务的程序并且工作良好。 你有意愿取接受 Kubernetes 对 REST 资源路径所作的格式限制，例如 API 组和名字空间。（参阅 API 概述
+） 你需要使用一些特殊的 REST 路径以便与已经定义的 REST API 保持兼容。 你的资源可以自然地界定为集群作用域或集群中某个名字空间作用域。 集群作用域或名字空间作用域这种二分法很不合适；你需要对资源路径的细节进行控制。 你希望复用 Kubernetes API 支持特性
+。 你不需要这类特性。 简单解释就是CRD方式可以使用k8s已有api，当k8s已有api不满足条件时，才使用聚合层api来扩展。
+...</p>
+  </div>
+  <footer class="entry-footer"><span title='2024-11-13 16:33:24 +0800 CST'>十一月 13, 2024</span>&nbsp;·&nbsp;lidongqi</footer>
+  <a class="entry-link" aria-label="post link to 实现一个operator（1）" href="https://lidongqi.github.io/posts/nginx-operator_1/"></a>
+</article>
+
+<article class="post-entry"> 
+  <header class="entry-header">
     <h2 class="entry-hint-parent">ollama自定义模型
     </h2>
   </header>
